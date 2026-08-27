@@ -162,6 +162,20 @@ test('math inside a list item and a table cell is rendered', async () => {
   assert.strictEqual((await inspect('#tbl')).dir, 'rtl');
 });
 
+test('a right-to-left table sits at the reading edge', async () => {
+  const position = await page.evaluate(() => {
+    const table = document.querySelector('#tbl');
+    const box = table.getBoundingClientRect();
+    const container = table.parentElement.getBoundingClientRect();
+    return {
+      narrower: box.width < container.width - 20,
+      centre: box.left + box.width / 2 > container.left + container.width / 2
+    };
+  });
+  assert.strictEqual(position.narrower, true, 'the fixture table should not fill the width');
+  assert.strictEqual(position.centre, true, 'a Hebrew table belongs on the right');
+});
+
 test('a blockquote gets direction and a border on the right side', async () => {
   const bq = await inspect('#bq');
   assert.strictEqual(bq.dir, 'rtl');

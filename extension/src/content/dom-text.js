@@ -32,6 +32,10 @@
   // `$a<em>{i}</em>$` would scan as broken math.
   var EMPHASIS = { EM: '_', I: '_', STRONG: '**', B: '**', DEL: '~~', S: '~~' };
 
+  // Atoms whose text is a human-readable label rather than code: their words
+  // count towards the direction of the line they sit on.
+  var LABELLED_ATOMS = { BUTTON: true, SELECT: true };
+
   var BLOCK_LEVEL = Object.create(null);
   for (var b = 0; b < BLOCK_LEVEL_TAGS.length; b++) BLOCK_LEVEL[BLOCK_LEVEL_TAGS[b]] = true;
 
@@ -72,48 +76,54 @@
     var text = '';
     var sample = '';
     var parts = [];
+    var hasInline = false;
 
-    function push(kind, node, value, inSample) {
+    function push(kind, node, value, sampleValue) {
       if (!value) return;
       parts.push({ kind: kind, node: node, start: text.length, end: text.length + value.length });
       text += value;
-      if (inSample) sample += value;
+      if (sampleValue) sample += sampleValue;
+      if (kind !== 'block' && (kind !== 'text' || value.trim())) hasInline = true;
     }
 
     function walk(node) {
       for (var child = node.firstChild; child; child = child.nextSibling) {
         if (child.nodeType === 3) {                       // text
-          push('text', child, child.data, true);
+          push('text', child, child.data, child.data);
           continue;
         }
         if (!isElement(child)) continue;                  // comment, etc.
 
         if (child !== block && isBlockLevel(child)) {
-          // A nested paragraph, list or table belongs to its own model.
-          push('atom', child, OBJ, false);
+          // A nested paragraph, list or table belongs to its own model. It is
+          // not inline content, so a container holding nothing else has no
+          // text of its own and no direction to speak of.
+          push('block', child, OBJ, null);
           continue;
         }
 
         if (child.tagName === 'BR') {
-          push('virtual', child, '\n', true);
+          push('virtual', child, '\n', '\n');
           continue;
         }
 
         if (isOwnMath(child)) {
-          push('math-atom', child, child.getAttribute('data-clh-latex'), false);
+          push('math-atom', child, child.getAttribute('data-clh-latex'), null);
           continue;
         }
 
         if (isAtomElement(child)) {
-          push('atom', child, OBJ, false);
+          // A control's label is ordinary prose: opaque to the math scanner,
+          // but it is exactly what decides which way the control reads.
+          push('atom', child, OBJ, LABELLED_ATOMS[child.tagName] ? child.textContent : null);
           continue;
         }
 
         var marker = EMPHASIS[child.tagName];
         if (marker) {
-          push('virtual', child, marker, false);
+          push('virtual', child, marker, null);
           walk(child);
-          push('virtual', child, marker, false);
+          push('virtual', child, marker, null);
           continue;
         }
 
@@ -122,7 +132,15 @@
     }
 
     walk(block);
-    return { block: block, text: text, sample: sample, parts: parts };
+    return {
+      block: block,
+      text: text,
+      sample: sample,
+      parts: parts,
+      // Does this block hold anything of its own, or is it only scaffolding
+      // around other blocks?
+      hasInline: hasInline
+    };
   }
 
   function partAt(model, pos, preferEnd) {
@@ -178,7 +196,7 @@
   function spanCrossesAtom(model, start, end) {
     for (var i = 0; i < model.parts.length; i++) {
       var p = model.parts[i];
-      if (p.kind !== 'atom') continue;
+      if (p.kind !== 'atom' && p.kind !== 'block') continue;
       if (p.start < end && p.end > start) return true;
     }
     return false;

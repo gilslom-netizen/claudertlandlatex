@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Session UI fixture</title>
+  <link rel="icon" href="data:,">
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; width: 800px; }
+
+    /* A prompt bubble is pushed to one side by the row's alignment, which is
+       direction-relative - exactly the layout that moves when `dir` changes. */
+    .row { display: flex; justify-content: flex-end; margin: 12px 0; }
+    .bubble { background: #f0eee9; border-radius: 12px; padding: 10px 14px; max-width: 70%; }
+
+    .session-header { display: flex; justify-content: flex-end; gap: 6px; color: #666; }
+    .session-note { color: #888; font-size: 13px; text-align: center; margin: 4px 0 16px; }
+    .answer { margin: 12px 0; }
+
+    /* A bubble pushed aside by a logical margin rather than by a flex row:
+       the same visual result, a different property, and it also flips when the
+       element's direction changes. */
+    .logical { background: #f0eee9; border-radius: 12px; padding: 10px 14px;
+               max-width: 70%; margin-inline-start: auto; }
+  </style>
+</head>
+<body>
+<main>
+
+  <div class="turn" id="turn-1">
+    <div class="row" id="row-user-1">
+      <div class="bubble" id="bubble-1">
+        <p id="prompt-1">מה לגבי הפונקציה הבאה: היא מקבלת כפרמטר N ומחזירה את התוכנית ה-N-ית בלול ל׳.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chrome between turns: English only, and the label sits inside a button. -->
+  <div class="session-header" id="resumed-header-1"><button id="resumed-button-1">Resumed session</button></div>
+  <div class="session-note" id="session-note-1">Your environment restarted, often because the session was idle. The conversation continues where it left off.</div>
+
+  <div class="turn" id="turn-2">
+    <div class="row" id="row-user-2">
+      <div class="bubble" id="bubble-2">
+        <p id="prompt-2">מובטח שתוכנית זו תעצור לכל ערך של $N$, על פי הגדרה.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="session-header" id="resumed-header-2"><button id="resumed-button-2">Resumed session</button></div>
+
+  <div class="turn" id="turn-3">
+    <div class="logical" id="bubble-3">שאלה נוספת שנכתבה ישירות בתוך הבועה, בלי פסקה עוטפת.</div>
+  </div>
+
+  <div class="answer" id="answer-1">
+    <p id="answer-text-1">זו בנייה מצוינת, ואתה למעשה גילית מחדש משפט אמיתי ומוכר. אבל המסקנה שונה ממה שאתה מציע.</p>
+  </div>
+
+  <div class="answer" id="answer-2">
+    <p id="answer-math-only">$$\sum_{i=1}^{n} i = \frac{n(n+1)}{2}$$</p>
+    <p id="answer-text-2">כלומר הסכום גדל ריבועית.</p>
+  </div>
+
+</main>
+</body>
+</html>

@@ -56,29 +56,24 @@
 
 /* ----------------------------------------------------------- direction ---- */
 
-[data-clh-dir="rtl"] {
+[data-clh-dir="rtl"][data-clh-mode="dir"] {
   direction: rtl;
 }
 
-[data-clh-dir="ltr"] {
+[data-clh-dir="ltr"][data-clh-mode="dir"] {
   direction: ltr;
 }
 
-/* Alignment follows direction for text blocks only - never for cells or
-   captions that a page may have centred on purpose. */
-p[data-clh-dir],
-li[data-clh-dir],
-h1[data-clh-dir], h2[data-clh-dir], h3[data-clh-dir],
-h4[data-clh-dir], h5[data-clh-dir], h6[data-clh-dir],
-blockquote[data-clh-dir],
-dd[data-clh-dir], dt[data-clh-dir],
-div[data-clh-dir] {
-  text-align: start;
+/* A flex or grid container keeps the direction the page gave it - that is what
+   places its children - and resolves each line of text on its own instead. */
+[data-clh-mode="plaintext"] {
+  unicode-bidi: plaintext;
 }
 
-td[data-clh-dir="rtl"],
-th[data-clh-dir="rtl"] {
-  text-align: right;
+/* Alignment follows direction only where the page had not aligned the text
+   itself; anything centred or justified was a deliberate choice. */
+.clh-align {
+  text-align: start;
 }
 
 /* Anything Latin embedded in a right-to-left line: keep it in one piece and
@@ -104,6 +99,14 @@ ul[data-clh-dir="rtl"],
 ol[data-clh-dir="rtl"] {
   padding-right: 1.6em !important;
   padding-left: 0 !important;
+}
+
+/* A table shrinks to fit its content, so it sits wherever its container's
+   direction puts it - and that container's direction is not ours to change.
+   Push a right-to-left table to the reading edge instead. */
+table[data-clh-dir="rtl"] {
+  margin-left: auto;
+  margin-right: 0;
 }
 
 blockquote[data-clh-dir="rtl"] {

@@ -45,13 +45,91 @@
     return blocks;
   }
 
-  function setDirection(el, dir) {
-    if (el.getAttribute('data-clh-dir') === dir && el.getAttribute('dir') === dir) return false;
-    el.setAttribute('dir', dir);
+  // On these, `direction` decides where the children sit, not just how the
+  // text reads: setting it would slide a prompt bubble to the other side of
+  // the conversation.
+  var LAYOUT_DISPLAYS = {
+    'flex': true, 'inline-flex': true, 'grid': true, 'inline-grid': true
+  };
+
+  // Alignment we may replace with a direction-relative one. Anything else -
+  // centred, justified - was a deliberate choice by the page.
+  var REPLACEABLE_ALIGN = {
+    'start': true, 'end': true, 'left': true, 'right': true, '': true
+  };
+
+  function layoutFacts(el) {
+    var style;
+    try {
+      style = el.ownerDocument.defaultView.getComputedStyle(el);
+    } catch (err) {
+      return { layout: false, align: false };
+    }
+    if (!style) return { layout: false, align: false };
+    return {
+      layout: !!LAYOUT_DISPLAYS[style.display],
+      align: !!REPLACEABLE_ALIGN[style.textAlign]
+    };
+  }
+
+  // Elements that exist to hold text. A direction belongs on them by right,
+  // and their box is laid out by the flow, not by the direction.
+  var TEXT_ELEMENTS = {
+    P: true, LI: true, H1: true, H2: true, H3: true, H4: true, H5: true, H6: true,
+    BLOCKQUOTE: true, TD: true, TH: true, CAPTION: true, DD: true, DT: true,
+    FIGCAPTION: true, UL: true, OL: true, DL: true, TABLE: true, TR: true,
+    THEAD: true, TBODY: true, TFOOT: true, SUMMARY: true
+  };
+
+  function boxLeft(el) {
+    try {
+      var rect = el.getBoundingClientRect();
+      return (rect.width || rect.height) ? rect.left : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function writeDirection(el, dir, mode, align) {
     el.setAttribute('data-clh-dir', dir);
+    el.setAttribute('data-clh-mode', mode);
+    if (mode === 'dir') el.setAttribute('dir', dir);
+    else el.removeAttribute('dir');
+
     if (el.classList) {
-      el.classList.toggle('clh-rtl', dir === 'rtl');
-      el.classList.toggle('clh-ltr', dir === 'ltr');
+      el.classList.toggle('clh-rtl', mode === 'dir' && dir === 'rtl');
+      el.classList.toggle('clh-ltr', mode === 'dir' && dir === 'ltr');
+      el.classList.toggle('clh-align', align);
+    }
+  }
+
+  /**
+   * Give one element a direction.
+   *
+   * On a generic container, `direction` can decide placement as much as
+   * reading order - a flex row, a logical `margin-inline-start: auto`, an
+   * `inset-inline` offset. Rather than guess which property is at work, we
+   * check the only thing that matters: whether the element's own box moved. If
+   * it did, the direction is taken back and the text is sorted out with
+   * `unicode-bidi: plaintext` instead, which no layout depends on.
+   */
+  function setDirection(el, dir) {
+    var current = el.getAttribute('data-clh-mode');
+    var facts = layoutFacts(el);
+    var mode = facts.layout ? 'plaintext' : 'dir';
+    if (el.getAttribute('data-clh-dir') === dir &&
+        (current === mode || current === 'plaintext')) {
+      return false;
+    }
+
+    var before = (mode === 'dir' && !TEXT_ELEMENTS[el.tagName]) ? boxLeft(el) : null;
+    writeDirection(el, dir, mode, facts.align);
+
+    if (before !== null) {
+      var after = boxLeft(el);
+      if (after !== null && Math.abs(after - before) > 1) {
+        writeDirection(el, dir, 'plaintext', facts.align);
+      }
     }
     return true;
   }
@@ -59,10 +137,12 @@
   function clearDirection(el) {
     if (!el.hasAttribute('data-clh-dir')) return;
     el.removeAttribute('data-clh-dir');
+    el.removeAttribute('data-clh-mode');
     el.removeAttribute('dir');
     if (el.classList) {
       el.classList.remove('clh-rtl');
       el.classList.remove('clh-ltr');
+      el.classList.remove('clh-align');
     }
   }
 
@@ -84,21 +164,68 @@
   }
 
   /**
-   * Apply direction to one block. `previous` is the direction of the block
-   * before it, used when this one has no directional letter of its own - a
-   * lone formula or a bare number inherits the paragraph around it.
+   * The text a direction decision may be based on.
+   *
+   * Formulas are cut out, whether they have been rendered yet or not: LaTeX is
+   * all Latin letters, and on the pass that renders a paragraph the source is
+   * still sitting in the sample. Without this, a paragraph whose only content
+   * is a formula reads as English.
    */
-  function applyBlock(block, model, settings, previous) {
-    var Bidi = CLH.Bidi;
-    var sample = model ? model.sample : block.textContent;
-    var dir = Bidi.detectDirection(sample, {
+  function directionSample(model, settings) {
+    var text = model.sample;
+    var LatexScan = CLH.LatexScan;
+    if (!text || !LatexScan) return text;
+    if (text.indexOf('$') < 0 && text.indexOf('\\') < 0) return text;
+
+    var segments = LatexScan.scan(text, {
+      singleDollar: settings.math.singleDollar,
+      environments: settings.math.environments
+    });
+    var out = '';
+    for (var i = 0; i < segments.length; i++) {
+      if (segments[i].type === 'text') out += segments[i].value;
+    }
+    return out;
+  }
+
+  /**
+   * Work out which way one block reads, or null when its own text does not say.
+   */
+  function decideDirection(model, settings) {
+    return CLH.Bidi.detectDirection(directionSample(model, settings), {
       mode: settings.rtl.mode,
       rtlThreshold: settings.rtl.rtlThreshold
     });
-    if (!dir) dir = previous;
+  }
+
+  /**
+   * Apply direction to one block that has text of its own. Returns the
+   * direction applied, or null when the text carries no direction - the caller
+   * then settles it from the blocks beside it.
+   */
+  function applyBlock(block, model, settings) {
+    var dir = decideDirection(model, settings);
     if (!dir) return null;
     setDirection(block, dir);
     return dir;
+  }
+
+  /**
+   * A block whose text says nothing about direction - a lone formula, a bare
+   * number - reads with the blocks around it. Only true siblings count: a
+   * paragraph must never take its direction from an unrelated part of the app.
+   */
+  function inheritDirection(block) {
+    var sibling;
+    for (sibling = block.previousElementSibling; sibling; sibling = sibling.previousElementSibling) {
+      var before = sibling.getAttribute('data-clh-dir');
+      if (before) return before;
+    }
+    for (sibling = block.nextElementSibling; sibling; sibling = sibling.nextElementSibling) {
+      var after = sibling.getAttribute('data-clh-dir');
+      if (after) return after;
+    }
+    return null;
   }
 
   /** Second pass: containers whose direction follows their children. */
@@ -124,13 +251,6 @@
     }
   }
 
-  /** Give the message container the direction most of its blocks chose. */
-  function applyRootDirection(scope) {
-    var dir = majorityDirection(scope, '[data-clh-dir]');
-    if (dir) setDirection(scope, dir);
-    return dir;
-  }
-
   /** Undo everything this module did, for when the user turns RTL off. */
   function clearAll(scope) {
     var nodes = scope.querySelectorAll('[data-clh-dir]');
@@ -144,7 +264,9 @@
     collectBlocks: collectBlocks,
     applyBlock: applyBlock,
     applyContainers: applyContainers,
-    applyRootDirection: applyRootDirection,
+    decideDirection: decideDirection,
+    directionSample: directionSample,
+    inheritDirection: inheritDirection,
     setDirection: setDirection,
     clearAll: clearAll,
     isSkipped: isSkipped

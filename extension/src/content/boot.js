@@ -115,12 +115,17 @@
     var blocks = CLH.Rtl.collectBlocks(scope);
     var deadline = now();
     var pendingSoon = 0;
-    var previousDir = null;
+    var undecided = [];
     var touched = false;
 
     for (var i = 0; i < blocks.length; i++) {
       var block = blocks[i];
       var model = DomText.buildTextModel(block);
+
+      // Scaffolding - a row, a wrapper, a turn - holds no text of its own.
+      // It gets no direction: on a flex or grid container that would move the
+      // boxes, and there is nothing there to read either way.
+      if (!model.hasInline) continue;
       if (!model.text || !model.text.trim()) continue;
 
       var sig = signature(model.text);
@@ -134,10 +139,7 @@
       }
 
       if (record.done) {
-        if (!isStale(block, record, settings)) {
-          previousDir = block.getAttribute('data-clh-dir') || previousDir;
-          continue;
-        }
+        if (!isStale(block, record, settings)) continue;
         record.done = false;
         record.at = deadline;
         pendingSoon++;
@@ -153,8 +155,8 @@
         if (CLH.Math.processBlock(block, settings, model)) touched = true;
       }
       if (settings.rtl.enabled) {
-        var dir = CLH.Rtl.applyBlock(block, model, settings, previousDir);
-        if (dir) { previousDir = dir; touched = true; }
+        if (CLH.Rtl.applyBlock(block, model, settings)) touched = true;
+        else undecided.push(block);
       }
 
       record.done = true;
@@ -163,10 +165,18 @@
       record.dir = block.getAttribute('data-clh-dir');
     }
 
-    if (settings.rtl.enabled && touched) {
-      CLH.Rtl.applyContainers(scope, settings);
-      if (root.isMessage) CLH.Rtl.applyRootDirection(scope);
+    // Blocks whose own text says nothing - a lone formula, a bare number -
+    // read with the blocks beside them, once those have been decided.
+    for (var u = 0; u < undecided.length; u++) {
+      var inherited = CLH.Rtl.inheritDirection(undecided[u]);
+      if (!inherited) continue;
+      CLH.Rtl.setDirection(undecided[u], inherited);
+      touched = true;
+      var pending = state.blocks.get(undecided[u]);
+      if (pending) pending.dir = undecided[u].getAttribute('data-clh-dir');
     }
+
+    if (settings.rtl.enabled && touched) CLH.Rtl.applyContainers(scope, settings);
     return pendingSoon;
   }
 
