@@ -1,0 +1,22 @@
+{
+  "name": "claude-rtl-latex",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chrome extension that renders LaTeX and fixes right-to-left layout in Claude, including paragraphs that mix Hebrew and English.",
+  "scripts": {
+    "test": "node --test test/unit/*.test.js test/e2e/*.test.mjs",
+    "test:unit": "node --test test/unit/*.test.js",
+    "test:e2e": "node --test test/e2e/*.test.mjs",
+    "build:vendor": "node tools/build-vendor.mjs",
+    "build:icons": "node tools/make-icons.mjs",
+    "package": "cd extension && zip -r -FS ../claude-rtl-latex.zip . -x '*.DS_Store'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gilslom-netizen/claudertlandlatex.git"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "playwright": "^1.55.0"
+  }
+}

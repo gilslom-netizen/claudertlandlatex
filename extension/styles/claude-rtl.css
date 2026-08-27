@@ -1,0 +1,142 @@
+/*!
+ * claude-rtl.css - Layout rules for rendered math and mixed-direction text.
+ *
+ * Everything here is scoped to elements the extension marked itself
+ * (`[data-clh-dir]`, `.clh-*`), so nothing changes on a page we did not touch.
+ * `!important` appears only where a utility-class framework would otherwise
+ * win a tie and leave text unreadable.
+ */
+
+/* ---------------------------------------------------------------- math ---- */
+
+.clh-math {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+.clh-math .katex {
+  direction: ltr;
+  font-size: 1.1em;
+  text-indent: 0;
+}
+
+/* The original LaTeX, kept for restoring and for copy-as-source. */
+.clh-math-source {
+  display: none !important;
+}
+
+.clh-math-display {
+  display: block;
+  text-align: center;
+  margin: 0.85em 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* Room for the scrollbar on a formula wider than the message. */
+  padding-bottom: 2px;
+}
+
+.clh-math-display .katex-display {
+  margin: 0;
+}
+
+/* Two adjacent right-to-left runs inside one formula, put back in order. */
+.clh-rtl-run {
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+/* Math the page rendered itself still needs isolating from Hebrew around it. */
+.katex {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* ----------------------------------------------------------- direction ---- */
+
+[data-clh-dir="rtl"] {
+  direction: rtl;
+}
+
+[data-clh-dir="ltr"] {
+  direction: ltr;
+}
+
+/* Alignment follows direction for text blocks only - never for cells or
+   captions that a page may have centred on purpose. */
+p[data-clh-dir],
+li[data-clh-dir],
+h1[data-clh-dir], h2[data-clh-dir], h3[data-clh-dir],
+h4[data-clh-dir], h5[data-clh-dir], h6[data-clh-dir],
+blockquote[data-clh-dir],
+dd[data-clh-dir], dt[data-clh-dir],
+div[data-clh-dir] {
+  text-align: start;
+}
+
+td[data-clh-dir="rtl"],
+th[data-clh-dir="rtl"] {
+  text-align: right;
+}
+
+/* Anything Latin embedded in a right-to-left line: keep it in one piece and
+   stop its trailing punctuation from jumping to the wrong end. */
+[data-clh-dir="rtl"] code,
+[data-clh-dir="rtl"] kbd,
+[data-clh-dir="rtl"] samp,
+[data-clh-dir="rtl"] a,
+[data-clh-dir="rtl"] .clh-math,
+[data-clh-dir="rtl"] .katex {
+  unicode-bidi: isolate;
+}
+
+[data-clh-dir="rtl"] code,
+[data-clh-dir="rtl"] kbd,
+[data-clh-dir="rtl"] samp {
+  direction: ltr;
+}
+
+/* Lists and quotes are indented with physical padding by most themes, so the
+   indent has to be moved by hand when the direction flips. */
+ul[data-clh-dir="rtl"],
+ol[data-clh-dir="rtl"] {
+  padding-right: 1.6em !important;
+  padding-left: 0 !important;
+}
+
+blockquote[data-clh-dir="rtl"] {
+  border-left-width: 0 !important;
+  border-right-width: 3px;
+  border-right-style: solid;
+  border-right-color: rgba(128, 128, 128, 0.45);
+  padding-left: 0;
+  padding-right: 1em;
+}
+
+/* ---------------------------------------------------------------- code ---- */
+
+/* Code stays left-to-right even in the middle of a Hebrew answer. */
+.clh-code-ltr,
+.clh-code-ltr code,
+.clh-code-ltr pre {
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: isolate;
+}
+
+/* ------------------------------------------------------------ composer ---- */
+
+/* Per-paragraph direction while typing, decided by the browser from the text
+   itself. No DOM is touched here, which keeps the editor's own code happy. */
+.clh-composer,
+.clh-composer p,
+.clh-composer div,
+.clh-composer li,
+.clh-composer h1,
+.clh-composer h2,
+.clh-composer h3 {
+  unicode-bidi: plaintext;
+  text-align: start;
+}

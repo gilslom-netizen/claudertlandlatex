@@ -1,0 +1,56 @@
+{
+  "manifest_version": 3,
+  "name": "Claude RTL + LaTeX",
+  "version": "1.0.0",
+  "description": "Renders LaTeX and fixes right-to-left layout in Claude, including paragraphs that mix Hebrew and English.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "Claude RTL + LaTeX",
+    "default_popup": "options/options.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "permissions": [
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://claude.ai/*",
+        "https://*.claude.ai/*",
+        "https://claude.com/*",
+        "https://*.claude.com/*"
+      ],
+      "js": [
+        "src/vendor/katex/katex.min.js",
+        "src/core/latex-scan.js",
+        "src/core/bidi.js",
+        "src/core/settings.js",
+        "src/content/dom-text.js",
+        "src/content/math.js",
+        "src/content/rtl.js",
+        "src/content/copy.js",
+        "src/content/boot.js"
+      ],
+      "css": [
+        "src/vendor/katex/katex.min.css",
+        "styles/claude-rtl.css"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ]
+}

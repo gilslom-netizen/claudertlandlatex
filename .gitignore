@@ -1,0 +1,4 @@
+node_modules/
+.tmp/
+claude-rtl-latex.zip
+*.log

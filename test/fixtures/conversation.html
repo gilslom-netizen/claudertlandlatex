@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Conversation fixture</title>
+  <link rel="icon" href="data:,">   <!-- keeps the console free of a favicon 404 -->
+  <style>
+    /* Roughly what a chat UI hands us: physical padding on lists and quotes. */
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; }
+    ul, ol { padding-left: 1.6em; }
+    blockquote { border-left: 3px solid #ccc; padding-left: 1em; margin-inline: 0; }
+    pre { background: #f4f4f4; padding: 12px; overflow-x: auto; }
+    code { font-family: ui-monospace, monospace; }
+    table { border-collapse: collapse; }
+    td, th { border: 1px solid #ddd; padding: 4px 8px; }
+  </style>
+</head>
+<body>
+<main>
+  <div data-test-render-count="1">
+    <div class="font-claude-message">
+
+      <p id="p-he-math">הנוסחה $E = mc^2$ מתארת את שקילות המסה והאנרגיה.</p>
+
+      <p id="p-en">The identity $e^{i\pi} + 1 = 0$ links five constants.</p>
+
+      <p id="p-mixed">המונח <strong>gradient descent</strong> מתאר ירידה בכיוון $-\nabla f(x)$ בכל צעד, כלומר בכיוון ההפוך לגרדיאנט.</p>
+
+      <p id="p-display">נחשב את האינטגרל: $$\int_0^1 x^2\,dx = \frac{1}{3}$$</p>
+
+      <p id="p-money">המחיר הוא $5 והמשלוח $10 בלבד.</p>
+
+      <p id="p-inline-code">מריצים את הפקודה <code>echo $HOME</code> ואז ממשיכים הלאה.</p>
+
+      <p id="p-en-start">LaTeX הוא מערכת סימון מתמטית מצוינת לכתיבת נוסחאות.</p>
+
+      <p id="p-quote-he">The phrase שלום עולם means hello in Hebrew.</p>
+
+      <p id="p-emph">הערך $a<em>i + b</em>j$ נמדד בכל צעד.</p>
+
+      <p id="p-hebrew-in-math">מגדירים $v_{\text{מהירות}} = \frac{d}{t}$ ומכאן ממשיכים.</p>
+
+      <p id="p-broken">הביטוי $\frac{a$ שבור ולכן נשאר כמו שהוא.</p>
+
+      <p id="p-plain">סתם פסקה בעברית בלי שום נוסחה בכלל.</p>
+
+      <p id="p-plain-en">A plain English paragraph with no math at all.</p>
+
+      <ul id="list-he">
+        <li id="li-he-1">פריט ראשון עם הנוסחה $x^2$ בתוכו</li>
+        <li id="li-he-2">פריט שני, רגיל לגמרי</li>
+      </ul>
+
+      <ul id="list-en">
+        <li id="li-en-1">First item in English</li>
+        <li id="li-en-2">Second item in English</li>
+      </ul>
+
+      <ul id="list-nested">
+        <li id="li-outer">פריט חיצוני עם $y$
+          <ul>
+            <li id="li-inner">Nested English item with $z$</li>
+          </ul>
+        </li>
+      </ul>
+
+      <blockquote id="bq">ציטוט בעברית שכולל את $\alpha$ בתוכו.</blockquote>
+
+      <pre id="code-block"><code>function f(x) {
+  // חישוב הערך
+  return x * 2; // $notmath$
+}</code></pre>
+
+      <table id="tbl">
+        <tbody>
+          <tr>
+            <td id="td-he">שורה בעברית</td>
+            <td id="td-math">הערך $y_1$</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p id="p-env">\begin{align} a &amp;= b \\ c &amp;= d \end{align}</p>
+
+      <p id="p-stream"></p>
+
+    </div>
+  </div>
+</main>
+
+<div id="composer-wrap">
+  <div id="composer" contenteditable="true"><p>שלום, מה שלומך?</p></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>Claude RTL + LaTeX</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <header class="head">
+    <h1>Claude RTL + LaTeX</h1>
+    <label class="switch">
+      <input type="checkbox" id="enabled">
+      <span>מופעל</span>
+    </label>
+  </header>
+
+  <section class="card">
+    <h2>נוסחאות</h2>
+
+    <label class="row">
+      <input type="checkbox" id="math-enabled">
+      <span>הצגת LaTeX מעוצב</span>
+    </label>
+
+    <label class="row">
+      <input type="checkbox" id="math-single-dollar">
+      <span>לזהות <code>$...$</code> כנוסחה בשורה</span>
+      <small>כבו אם אתם כותבים הרבה על מחירים בדולרים.</small>
+    </label>
+
+    <label class="row">
+      <input type="checkbox" id="math-environments">
+      <span>לזהות <code>\begin{align}...\end{align}</code> ללא סימני דולר</span>
+    </label>
+
+    <label class="row">
+      <input type="checkbox" id="math-show-errors">
+      <span>להציג שגיאות פענוח באדום</span>
+      <small>כבוי: ביטוי שלא ניתן לפענח נשאר בדיוק כפי שנכתב.</small>
+    </label>
+
+    <label class="row block">
+      <span>פקודות מאקרו משלכם (JSON)</span>
+      <textarea id="math-macros" rows="3" spellcheck="false" dir="ltr"
+                placeholder='{"\\RR": "\\mathbb{R}"}'></textarea>
+      <small id="macros-error" class="error" hidden>JSON לא תקין - השינוי לא נשמר.</small>
+    </label>
+  </section>
+
+  <section class="card">
+    <h2>כיווניות</h2>
+
+    <label class="row">
+      <input type="checkbox" id="rtl-enabled">
+      <span>לקבוע כיוון לכל פסקה לפי הטקסט שבה</span>
+    </label>
+
+    <label class="row block">
+      <span>שיטת הזיהוי</span>
+      <select id="rtl-mode">
+        <option value="auto">חכם - האות הראשונה, אלא אם הפסקה עברית ברובה</option>
+        <option value="first-strong">האות הראשונה בלבד (תקן יוניקוד)</option>
+        <option value="majority">שפת הרוב בפסקה</option>
+      </select>
+    </label>
+
+    <label class="row block" id="threshold-row">
+      <span>סף המעבר לעברית: <output id="rtl-threshold-value">45%</output></span>
+      <input type="range" id="rtl-threshold" min="0" max="100" step="5">
+      <small>אחוז האותיות העבריות שנדרש כדי להפוך פסקה שמתחילה באנגלית.</small>
+    </label>
+
+    <label class="row">
+      <input type="checkbox" id="rtl-composer">
+      <span>כיוון אוטומטי גם בתיבת הכתיבה</span>
+    </label>
+
+    <label class="row">
+      <input type="checkbox" id="rtl-force-code-ltr">
+      <span>בלוקים של קוד תמיד משמאל לימין</span>
+    </label>
+  </section>
+
+  <section class="card">
+    <h2>כללי</h2>
+
+    <label class="row">
+      <input type="checkbox" id="copy-as-latex">
+      <span>העתקה של נוסחה מחזירה את קוד ה-LaTeX המקורי</span>
+    </label>
+
+    <label class="row block">
+      <span>המתנה לפני עיבוד: <output id="settle-value">350ms</output></span>
+      <input type="range" id="settle-ms" min="0" max="1500" step="50">
+      <small>זמן שהטקסט צריך להישאר ללא שינוי. מונע התנגשות בזמן שקלוד כותב.</small>
+    </label>
+
+    <label class="row block">
+      <span>היכן לפעול</span>
+      <select id="scope">
+        <option value="auto">אוטומטי - הודעות השיחה, עם נפילה לאזור הראשי</option>
+        <option value="messages">הודעות השיחה בלבד</option>
+        <option value="page">כל האזור הראשי</option>
+      </select>
+    </label>
+  </section>
+
+  <footer class="foot">
+    <button type="button" id="reset">איפוס לברירת המחדל</button>
+    <span id="status" role="status" aria-live="polite"></span>
+  </footer>
+
+  <script src="../src/core/settings.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
