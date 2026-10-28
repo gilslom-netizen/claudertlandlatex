@@ -94,6 +94,9 @@
         }
         if (!isElement(child)) continue;                  // comment, etc.
 
+        // The hidden original behind a repaired <sub>/<sup> is not content.
+        if (child.classList && child.classList.contains('clh-tags-source')) continue;
+
         if (child !== block && isBlockLevel(child)) {
           // A nested paragraph, list or table belongs to its own model. It is
           // not inline content, so a container holding nothing else has no

@@ -23,7 +23,8 @@
 }
 
 /* The original LaTeX, kept for restoring and for copy-as-source. */
-.clh-math-source {
+.clh-math-source,
+.clh-tags-source {
   display: none !important;
 }
 

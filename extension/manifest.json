@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Claude RTL + LaTeX",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Renders LaTeX and fixes right-to-left layout in Claude, including paragraphs that mix Hebrew and English.",
   "icons": {
     "16": "icons/icon-16.png",
@@ -42,6 +42,7 @@
         "src/content/dom-text.js",
         "src/content/math.js",
         "src/content/rtl.js",
+        "src/content/html-tags.js",
         "src/content/copy.js",
         "src/content/boot.js"
       ],

@@ -31,6 +31,7 @@
     composer: $('rtl-composer'),
     forceCodeLtr: $('rtl-force-code-ltr'),
     copyAsLatex: $('copy-as-latex'),
+    fixHtmlTags: $('fix-html-tags'),
     settleMs: $('settle-ms'),
     settleValue: $('settle-value'),
     scope: $('scope'),
@@ -56,6 +57,7 @@
     fields.forceCodeLtr.checked = settings.rtl.forceCodeLtr;
 
     fields.copyAsLatex.checked = settings.copyAsLatex;
+    fields.fixHtmlTags.checked = settings.fixHtmlTags;
     fields.settleMs.value = settings.settleMs;
     fields.scope.value = settings.scope;
 
@@ -104,6 +106,7 @@
           forceCodeLtr: fields.forceCodeLtr.checked
         },
         copyAsLatex: fields.copyAsLatex.checked,
+        fixHtmlTags: fields.fixHtmlTags.checked,
         settleMs: parseInt(fields.settleMs.value, 10),
         scope: fields.scope.value
       },

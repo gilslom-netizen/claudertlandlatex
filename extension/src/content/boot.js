@@ -152,7 +152,16 @@
       }
 
       if (settings.math.enabled) {
-        if (CLH.Math.processBlock(block, settings, model)) touched = true;
+        if (CLH.Math.processBlock(block, settings, model)) {
+          touched = true;
+          model = DomText.buildTextModel(block);
+        }
+      }
+      // After math, so a formula's own source is never rewritten; before
+      // direction, so the letters of "sub" and "sup" do not vote.
+      if (settings.fixHtmlTags && CLH.HtmlTags.repairBlock(model)) {
+        touched = true;
+        model = DomText.buildTextModel(block);
       }
       if (settings.rtl.enabled) {
         if (CLH.Rtl.applyBlock(block, model, settings)) touched = true;
@@ -255,6 +264,7 @@
     // change rarely, and a full re-derivation is the only way a narrower rule
     // - "stop treating $…$ as math" - can take back what a wider one rendered.
     try { CLH.Math.restoreAll(document.body); } catch (err) { /* ignore */ }
+    try { CLH.HtmlTags.restoreAll(document.body); } catch (err) { /* ignore */ }
     try { CLH.Rtl.clearAll(document.body); } catch (err) { /* ignore */ }
 
     if (!next.enabled) {

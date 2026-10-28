@@ -318,6 +318,72 @@ test('copying a whole answer keeps paragraphs on separate lines', async () => {
     'The identity $e^{i\\pi} + 1 = 0$ links five constants.');
 });
 
+test('literal <sub> and <sup> text becomes real sub- and superscripts', async () => {
+  const result = await page.evaluate(() => {
+    const p = document.querySelector('#p-html-sub');
+    return {
+      subs: Array.from(p.querySelectorAll('sub')).map((el) => el.textContent),
+      sups: Array.from(p.querySelectorAll('sup')).map((el) => el.textContent),
+      visible: p.innerText,
+      dir: p.getAttribute('dir')
+    };
+  });
+  assert.deepStrictEqual(result.subs, ['n', 'n']);
+  assert.deepStrictEqual(result.sups, ['2']);
+  assert.doesNotMatch(result.visible, /<\/?su[bp]>/, 'no raw tag may stay visible');
+  assert.match(result.visible, /ל־an, מנה 1\/2 ל־bn, והריבוע x2 גדל\./);
+  assert.strictEqual(result.dir, 'rtl');
+});
+
+test('tags inside code are left as code', async () => {
+  const result = await page.evaluate(() => {
+    const p = document.querySelector('#p-html-code');
+    return { subs: p.querySelectorAll('sub').length, code: p.querySelector('code').textContent };
+  });
+  assert.strictEqual(result.subs, 0);
+  assert.strictEqual(result.code, '<sub>n</sub>');
+});
+
+test('a tag with attributes is never turned into an element', async () => {
+  const result = await page.evaluate(() => {
+    const p = document.querySelector('#p-html-attr');
+    return { subs: p.querySelectorAll('sub').length, text: p.textContent };
+  });
+  assert.strictEqual(result.subs, 0);
+  assert.strictEqual(result.text, 'כאן <sub onclick="x">n</sub> אינו מומר.');
+});
+
+test('copying repaired text does not repeat the hidden original', async () => {
+  const copied = await page.evaluate(() => {
+    const CLH = globalThis.CLH;
+    const range = document.createRange();
+    range.selectNodeContents(document.querySelector('#p-html-sub'));
+    const holder = document.createElement('div');
+    holder.appendChild(range.cloneContents());
+    CLH.Copy.rewriteMath(holder);
+    return CLH.Copy.serialize(holder);
+  });
+  assert.strictEqual(copied, 'מנה 1/4 ל־an, מנה 1/2 ל־bn, והריבוע x2 גדל.');
+});
+
+test('turning the repair off gives back exactly what Claude wrote', async () => {
+  const result = await page.evaluate(() => {
+    const CLH = globalThis.CLH;
+    CLH.Boot.applySettings(CLH.Settings.normalize({ fixHtmlTags: false }));
+    const p = document.querySelector('#p-html-sub');
+    const off = { subs: p.querySelectorAll('sub').length, text: p.textContent };
+    CLH.state.settings = CLH.Settings.normalize({ settleMs: 0 });
+    CLH.state.blocks = new WeakMap();
+    CLH.Boot.pass();
+    CLH.Boot.pass();
+    return { off, subsAgain: p.querySelectorAll('sub').length };
+  });
+  assert.strictEqual(result.off.subs, 0);
+  assert.strictEqual(result.off.text,
+    'מנה 1/4 ל־a<sub>n</sub>, מנה 1/2 ל־b<sub>n</sub>, והריבוע x<sup>2</sup> גדל.');
+  assert.strictEqual(result.subsAgain, 2);
+});
+
 test('turning math off restores every expression on the page', async () => {
   const result = await page.evaluate(() => {
     const CLH = globalThis.CLH;
@@ -338,12 +404,14 @@ test('turning the extension off clears every direction it set', async () => {
     return {
       dirs: document.querySelectorAll('[data-clh-dir]').length,
       math: document.querySelectorAll('.clh-math').length,
+      tags: document.querySelectorAll('.clh-tags').length,
       composer: document.querySelectorAll('.clh-composer').length,
       paragraphDir: document.querySelector('#p-he-math').getAttribute('dir')
     };
   });
   assert.strictEqual(result.dirs, 0);
   assert.strictEqual(result.math, 0);
+  assert.strictEqual(result.tags, 0);
   assert.strictEqual(result.composer, 0);
   assert.strictEqual(result.paragraphDir, null);
 });

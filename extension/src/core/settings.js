@@ -47,6 +47,10 @@
     // Copying rendered math yields the original LaTeX source.
     copyAsLatex: true,
 
+    // Show literal `<sub>n</sub>` / `<sup>2</sup>` text as real sub- and
+    // superscripts.
+    fixHtmlTags: true,
+
     // How long a paragraph must stay unchanged before we touch it, in ms.
     // Streaming text is left alone until it settles, which keeps us out of
     // Claude's way while it is still writing.
@@ -106,6 +110,7 @@
 
     d.enabled = bool(stored.enabled, d.enabled);
     d.copyAsLatex = bool(stored.copyAsLatex, d.copyAsLatex);
+    d.fixHtmlTags = bool(stored.fixHtmlTags, d.fixHtmlTags);
     d.settleMs = Math.round(num(stored.settleMs, d.settleMs, 0, 5000));
     d.scope = oneOf(stored.scope, SCOPES, d.scope);
 

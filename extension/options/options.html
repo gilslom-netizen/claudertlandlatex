@@ -89,6 +89,12 @@
       <span>העתקה של נוסחה מחזירה את קוד ה-LaTeX המקורי</span>
     </label>
 
+    <label class="row">
+      <input type="checkbox" id="fix-html-tags">
+      <span>להציג <code>&lt;sub&gt;</code> ו-<code>&lt;sup&gt;</code> גולמיים כאינדקס תחתון ועליון</span>
+      <small>קלוד כותב לפעמים a&lt;sub&gt;n&lt;/sub&gt; במקום נוסחה, והממשק מציג את התגיות כטקסט.</small>
+    </label>
+
     <label class="row block">
       <span>המתנה לפני עיבוד: <output id="settle-value">350ms</output></span>
       <input type="range" id="settle-ms" min="0" max="1500" step="50">

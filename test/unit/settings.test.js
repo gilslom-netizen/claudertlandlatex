@@ -19,6 +19,12 @@ test('normalize never returns the shared defaults object', () => {
   assert.deepStrictEqual(b.math.macros, {});
 });
 
+test('the sub/sup repair is on by default and can be switched off', () => {
+  assert.strictEqual(Settings.normalize(null).fixHtmlTags, true);
+  assert.strictEqual(Settings.normalize({ fixHtmlTags: false }).fixHtmlTags, false);
+  assert.strictEqual(Settings.normalize({ fixHtmlTags: 'no' }).fixHtmlTags, true);
+});
+
 test('stored values override defaults', () => {
   const s = Settings.normalize({ enabled: false, settleMs: 100, scope: 'page' });
   assert.strictEqual(s.enabled, false);

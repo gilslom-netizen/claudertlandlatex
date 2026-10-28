@@ -6,7 +6,7 @@ import { chromium } from 'playwright';
 import { createServer } from 'node:http';
 import { readFile, mkdtemp, cp, writeFile } from 'node:fs/promises';
 import { generateKeyPairSync, createHash } from 'node:crypto';
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,8 +23,14 @@ export function chromiumExecutable() {
   const preferred = chromium.executablePath();
   if (existsSync(preferred)) return preferred;
   const base = process.env.PLAYWRIGHT_BROWSERS_PATH || '/opt/pw-browsers';
-  const candidates = ['chromium', 'chromium-1194', 'chromium-1187']
-    .map((name) => path.join(base, name, 'chrome-linux', 'chrome'));
+  // Any installed revision will do; newer builds ship as chrome-linux64.
+  const revisions = existsSync(base)
+    ? readdirSync(base).filter((name) => /^chromium(-\d+)?$/.test(name)).sort().reverse()
+    : [];
+  const candidates = revisions.flatMap((name) => [
+    path.join(base, name, 'chrome-linux64', 'chrome'),
+    path.join(base, name, 'chrome-linux', 'chrome')
+  ]);
   const found = candidates.find((candidate) => existsSync(candidate));
   if (!found) throw new Error('no Chromium build found for the browser tests');
   return found;
@@ -135,6 +141,7 @@ export const SCRIPT_ORDER = [
   'src/content/dom-text.js',
   'src/content/math.js',
   'src/content/rtl.js',
+  'src/content/html-tags.js',
   'src/content/copy.js',
   'src/content/boot.js'
 ];

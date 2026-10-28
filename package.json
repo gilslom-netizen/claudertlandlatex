@@ -1,6 +1,6 @@
 {
   "name": "claude-rtl-latex",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "Chrome extension that renders LaTeX and fixes right-to-left layout in Claude, including paragraphs that mix Hebrew and English.",
   "scripts": {

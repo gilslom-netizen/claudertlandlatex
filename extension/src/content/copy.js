@@ -90,7 +90,7 @@
     }
 
     // Leftover hidden source holders would otherwise be copied twice.
-    var hidden = fragment.querySelectorAll('.clh-math-source');
+    var hidden = fragment.querySelectorAll('.clh-math-source, .clh-tags-source');
     for (i = 0; i < hidden.length; i++) {
       if (hidden[i].parentNode) hidden[i].parentNode.removeChild(hidden[i]);
     }
@@ -108,7 +108,7 @@
       for (var r = 0; r < selection.rangeCount; r++) {
         container.appendChild(selection.getRangeAt(r).cloneContents());
       }
-      if (!container.querySelector('.clh-math, .katex, .clh-math-source')) return;
+      if (!container.querySelector('.clh-math, .katex, .clh-math-source, .clh-tags-source')) return;
       if (!rewriteMath(container)) return;
 
       var text = serialize(container);
